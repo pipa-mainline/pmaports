@@ -1,0 +1,40 @@
+pkgname=firmware-xiaomi-pipa
+pkgver=20230516
+pkgrel=0
+pkgdesc="Firmware for Xiaomi Pad 6"
+subpackages="
+	$pkgname-adreno
+	$pkgname-touchscreen
+	"
+url="https://github.com/pipa-mainline/xiaomi-pipa-firmware"
+arch="aarch64"
+license="proprietary"
+options="!check !strip !archcheck !tracedeps pmb:cross-native"
+_commit="7a0f7fafdae7049e70e9918a1ad51bd04985dfd7"
+source="https://github.com/pipa-mainline/xiaomi-pipa-firmware/archive/$_commit/xiaomi-pipa-firmware-$_commit.tar.gz"
+builddir="$srcdir/xiaomi-pipa-firmware-$_commit"
+
+package() {
+	# parent package is empty
+	mkdir -p "$pkgdir"
+}
+
+# Xiaomi pipa boots with secure boot, it can only load signed firmwares.
+adreno() {
+	pkgdesc="Xiaomi pipa adreno firmware"
+	depends="firmware-qcom-adreno-a650"
+
+	install -Dm644 "$builddir"/sm8250/a650_zap.mbn -t \
+		"$subpkgdir/lib/firmware/qcom/sm8250/xiaomi/pipa/"
+}
+
+touchscreen() {
+	pkgdesc="Xiaomi pipa touchscreen firmware"
+
+	install -Dm644 "$builddir"/novatek/nt36532.bin -t \
+		"$subpkgdir/lib/firmware/novatek/"
+}
+
+sha512sums="
+68bbf09ff4a969203827439407a878a8febf6b2d6dd83cb38255ac280f32ac1c59710584361d26f11069cb4a9fd16305d134cdfef95dc2cd398c09dd216fc9d7  xiaomi-pipa-firmware-7a0f7fafdae7049e70e9918a1ad51bd04985dfd7.tar.gz
+"

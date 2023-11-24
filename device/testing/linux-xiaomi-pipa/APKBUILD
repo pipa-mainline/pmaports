@@ -1,0 +1,66 @@
+# Reference: <https://postmarketos.org/vendorkernel>
+# Kernel config based on: arch/arm64/configs/defconfig
+# Maintainer: Luka Panio <lukapanio@gmail.com>
+
+_flavor="xiaomi-pipa"
+pkgname=linux-$_flavor
+pkgver=6.6.0_rc6
+pkgrel=1
+pkgdesc="Mainline kernel fork for Xiaomi Pad 6"
+arch="aarch64"
+_carch="arm64"
+url="https://github.com/pipa-mainline/linux"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps
+	pmb:cross-native
+	pmb:kconfigcheck-nftables
+	pmb:kconfigcheck-community
+"
+makedepends="
+	bash
+	bison
+	findutils
+	flex
+	installkernel
+	openssl-dev
+	perl
+"
+
+# Source
+_tag="pipa-initial-display"
+_config="config-$_flavor.$arch"
+source="
+	$pkgname-$_tag.tar.gz::https://github.com/pipa-mainline/linux/archive/refs/tags/$_tag.tar.gz
+	$_config
+"
+builddir="$srcdir/linux-$_tag"
+
+prepare() {
+	default_prepare
+	cp "$srcdir/config-$_flavor.$arch" .config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}"
+}
+
+package() {
+	mkdir -p "$pkgdir"/boot
+
+	make zinstall modules_install dtbs_install \
+		ARCH="$_carch" \
+		INSTALL_PATH="$pkgdir"/boot/ \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_MOD_STRIP=1 \
+		INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"
+	rm -f "$pkgdir"/lib/modules/*/build "$pkgdir"/lib/modules/*/source
+
+	install -D "$builddir"/include/config/kernel.release \
+		"$pkgdir"/usr/share/kernel/$_flavor/kernel.release
+}
+
+sha512sums="
+0b804c25725c2846e4c939738cc6afd62c6afbcc031c52559eeb6cace195a47a0617eb72f49e5b8a718f2e74d641d7b7edbfa1f003548311e6629d5b47b3a563  linux-xiaomi-pipa-pipa-initial-display.tar.gz
+7ff1eece377110272a8fd6ebeda49c0474f5028d6e44a1e8b4bec9542651110370234a9649a46cb2414611a6aaf727be59d333b9b0cb4a0c7bfa95967d266178  config-xiaomi-pipa.aarch64
+"

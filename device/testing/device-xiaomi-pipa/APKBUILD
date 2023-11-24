@@ -1,0 +1,53 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname=device-xiaomi-pipa
+pkgdesc="Xiaomi Pad 6"
+pkgver=0.1
+pkgrel=5
+url="https://postmarketos.org"
+license="MIT"
+arch="aarch64"
+options="!check !archcheck"
+depends="
+	make-dynpart-mappings
+	mesa-vulkan-freedreno
+	mkbootimg
+	postmarketos-base
+	postmarketos-update-kernel
+	qbootctl
+	swclock-offset
+	linux-xiaomi-pipa
+"
+makedepends="devicepkg-dev"
+install="$pkgname.post-install $pkgname.post-upgrade"
+source="deviceinfo modules-initfs"
+
+subpackages="
+	$pkgname-nonfree-firmware:nonfree_firmware
+"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+nonfree_firmware() {
+	pkgdesc="Firmware for GPU, WiFi, Touchscreen etc."
+	depends="
+		firmware-xiaomi-pipa-adreno
+		firmware-xiaomi-pipa-touchscreen
+		linux-firmware-ath11k
+		linux-firmware-qca
+		pd-mapper
+		tqftpserv
+		"
+	install="$subpkgname.post-install $subpkgname.post-upgrade"
+	mkdir "$subpkgdir"
+}
+
+sha512sums="
+4fbbc4a403a27858139c1d716b3e2bca2fdc82a67d99adb078ac78896e9f5a5be969b877f394be947bec5a318b9f107c3125076bd9a674d9bd68c2ecc7e1e0a1  deviceinfo
+08429bea885350e34c4d7f7aec02e440080a78db3ac10d8a757012ffa5dcafe93a12db24e37201d02cd423db9c33cf0bafcd0c03935dfa159a2e89ccafe93f3e  modules-initfs
+"
